@@ -1,0 +1,151 @@
+<html>
+	<head>
+<script type="text/javascript" src="static/js/gears_init.js"></script>
+<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAA8BIRg00HxcZfMmKWER2WexQ7LC3C_fx_Q1GpOIvzsAGy10bYSxQFXmk4ZqzwBhTQIoqAotMqipvIMQ" type="text/javascript"></script>
+<script type="text/javascript">
+var geo = google.gears.factory.create('beta.geolocation');
+var geocoder = null;
+var lat = null;
+var lon = null;
+var map = null;
+var old_overlay = null;
+var time = null;
+
+function updatePosition(position) {
+  if(lat == null){
+    lat = position.latitude;
+    lon = position.longitude;
+    var current_location = new GLatLng(lat, lon);
+    geocoder = new GClientGeocoder();
+    map = new GMap2(document.getElementById("map_canvas"));
+    geocoder.getLocations(current_location, showAddress)
+    old_overlay = current_location
+    map.setCenter(current_location, 13);
+    var marker = new GMarker(current_location);	
+    map.addOverlay(marker);
+
+  }
+}
+
+function showAddress(response){
+  if(response && response.Status.code == 200){
+	place = response.Placemark[0];
+    document.getElementById("human_address").innerHTML = place.address;
+    document.getElementById("human_readable").value = place.address;
+  }
+}
+
+function handleError(positionError) {
+}
+
+function loadresources(){
+  if (!window.google || !google.gears) {
+    location.href = "http://gears.google.com/?action=install&message=" +        
+                    "To%20use%20Mutiny%27s%20auto-location%20feature%2C%20you%27ll%20need%20to%20install%20gears" +
+                    "&return=http%3A%2F%2Fmutiny.appspot.com%2Fmobile";
+	}
+
+  geo.watchPosition(updatePosition, handleError, {enableHighAccuracy: true});
+
+  return true;
+		
+}
+
+function updateUserLocation(form){
+  if (geocoder) {
+    var loc = geocoder.getLatLng(
+		      form.address.value,
+		      function(point) {
+		        if(!point){
+					alert('Bad Address')
+					return;
+				} else {
+	              map.setCenter(point, 13);
+	              var marker = new GMarker(point);
+                  map.removeOverlay(old_overlay);
+	              map.addOverlay(marker);
+                  old_overlay = point;
+  			      document.getElementById("human_address").innerHTML = form.address.value;
+  			      document.getElementById("human_readable").value = form.address.value;                  
+  			      lat = point.lat();
+  			      lon = point.lng();                  
+				}
+		      }
+		    );
+  }	      
+}
+
+function findNearLocation(form){
+  document.getElementById("lat").value = lat;
+  document.getElementById("lon").value = lon;
+  form.submit();
+}
+
+function updateTime(form){
+  var dow = document.getElementById("timeFormDow").value;
+  var hour = parseFloat(document.getElementById("hour").value);
+  var minute = document.getElementById("minute").value;
+  var ampm = document.getElementById("ampm").value;
+  if(ampm == "PM"){
+    hour = hour + 12.0;
+  }
+  if(minute == "30"){
+	hour = hour + 0.5;
+  }
+  document.getElementById("dow").value = dow;
+  document.getElementById("time").value = hour;
+}
+</script>
+	</head>
+	<body onload="loadresources()">
+	<form action="/find" method="POST" id="submitForm">
+        <input type="hidden" id="lat" name="lat"/>
+        <input type="hidden" id="lon" name="lon"/>
+        <input type="hidden" id="time" name="time">
+        <input type="hidden" id="dow" name="dow">
+		<div id="map_canvas" style="width: 500px; height: 300px"></div>
+		<div id="human_address"></div>
+        <input type="hidden" id="human_readable" name="human_readable">
+		<input type="button" value="Find Things near here!" onclick="findNearLocation(this.form)"><br />
+</form>
+<form action="#" id="addressForm">
+        Enter a Different Address: <input type="text" id="address" name="adress">
+        <input type="button" value="Update My Location" onclick="updateUserLocation(this.form)"><br />
+</form>
+<form action="#" id="timeForm">
+        Enter a Different Time: <select id="timeFormDow">
+<option value="0">Monday</option>
+<option value="1">Tuesday</option>
+<option value="2">Wednesday</option>
+<option value="3">Thursday</option>
+<option value="4">Friday</option>
+<option value="5">Saturday</option>
+<option value="6">Sunday</option>
+
+	</select>&nbsp;&nbsp;
+<select id="hour">
+	<option value="1">1</option>
+	<option value="2">2</option>
+	<option value="3">3</option>
+	<option value="4">4</option>
+	<option value="5">5</option>
+	<option value="6">6</option>
+	<option value="7">7</option>
+	<option value="8">8</option>
+	<option value="9">9</option>
+	<option value="10">10</option>
+	<option value="11">11</option>
+	<option value="0">12</option>
+</select>&nbsp;&nbsp;
+<select id="minute">
+	<option value="00">00</option>
+	<option value="30">30</option>
+</select>&nbsp;&nbsp;
+<select id="ampm">
+	<option value="AM">AM</option>
+	<option value="PM">PM</option>
+    <input type="button" value="Update Time" onclick="updateTime(this.form)"><br />
+</select>
+	</form>
+	</body>
+</html>

@@ -1,0 +1,45 @@
+<html>
+	<head>
+<script type="text/javascript" src="static/js/gears_init.js"></script>
+<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAA8BIRg00HxcZfMmKWER2WexQ7LC3C_fx_Q1GpOIvzsAGy10bYSxQFXmk4ZqzwBhTQIoqAotMqipvIMQ" type="text/javascript"></script>
+<script type="text/javascript">
+var geocoder = null;
+var lat = null;
+var lon = null;
+var map = null;
+var old_overlay = null;
+var time = null;
+
+
+function handleError(positionError) {
+}
+
+function loadresources(){
+  lat = {{ user_lat }};
+  lon = {{ user_lon }};
+  var current_location = new GLatLng(lat, lon);
+  geocoder = new GClientGeocoder();
+  map = new GMap2(document.getElementById("map_canvas"));
+  map.setCenter(current_location, 13);
+  var marker = new GMarker(current_location);	
+  map.addOverlay(marker);
+  {% for all_store_info in store_information %}
+    var store_location = new GLatLng({{ all_store_info.1.location.lat }}, {{ all_store_info.1.location.lat }});
+    var store_marker = new GMarker(store_location);
+    map.addOverlay(store_marker)
+  {% endfor %}
+		
+}
+
+</script>
+	</head>
+	<body onload="loadresources()">
+    <p>Looking for businesses near {{ human_address }} on {{ human_time }}</p>
+    <div id="map_canvas" style="width: 500px; height: 300px"></div>
+    {% for all_store_info in store_information %}
+    Store Name: {{ all_store_info.1.name }}<br />
+    Store Address: {{ all_store_info.1.pretty_address }}<br />
+    Distance: {{ all_store_info.0 }}
+    {% endfor %}
+	</body>
+</html>
