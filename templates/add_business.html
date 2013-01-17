@@ -1,0 +1,49 @@
+<html>
+<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAA8BIRg00HxcZfMmKWER2WexQ7LC3C_fx_Q1GpOIvzsAGy10bYSxQFXmk4ZqzwBhTQIoqAotMqipvIMQ" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+var geocoder = null;
+
+function initialize() {
+  geocoder = new GClientGeocoder();
+}
+
+function populateBizInfo(form) {
+  if (geocoder) {
+    var loc = geocoder.getLatLng(
+      form.address.value,
+      function(point) {
+        if(!point){
+			alert('Bad Address')
+			return;
+		} else {
+			document.getElementById("lat").value = point.lat();
+			document.getElementById("lon").value = point.lng();
+		    form.submit();
+		}
+      }
+    );
+  }
+}
+</script>
+	<body onload="initialize()" onunload="GUnload()">
+		<form action="/add_biz" method="POST">
+			Business Name: <input type="text" name="name"><br />
+            Business Address: <input type="text" name="address"><br />
+            Business Hours:<br /> 
+            Monday: <input type="text" name="monday_start"> <input type="text" name="monday_end"><br />
+            Tuesday: <input type="text" name="tuesday_start"> <input type="text" name="tuesday_end"><br />
+            Wednesday: <input type="text" name="wednesday_start"> <input type="text" name="wednesday_end"><br />
+            Thursday: <input type="text" name="thursday_start"> <input type="text" name="thursday_end"><br />
+            Friday: <input type="text" name="friday_start"> <input type="text" name="friday_end"><br />
+            Saturday: <input type="text" name="saturday_start"> <input type="text" name="saturday_end"><br />
+            Sunday: <input type="text" name="sunday_start"> <input type="text" name="sunday_end"><br />
+            Description: <input type="text" name="description">
+            Tag: <input type="text" name="tags">
+			<input type="hidden" id="lat" name="lat">
+			<input type="hidden" id="lon" name="lon">
+			<input type="button" value="Add Business" onclick="populateBizInfo(this.form)">
+		</form>
+	</body>
+</html>
